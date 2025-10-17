@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'package:path/path.dart' as p;
 import '../models/ssh_connection.dart';
 import '../models/progress_info.dart';
 
@@ -87,49 +89,119 @@ class SSHProvider extends ChangeNotifier {
   }
 
   Future<void> executeTransfer() async {
-    if (!_isConnected) {
-      _addConsoleOutput('❌ Not connected to server');
+    // Basic validation
+    if (_host.isEmpty) {
+      _addConsoleOutput('❌ Host is empty');
+      notifyListeners();
+      return;
+    }
+    if (_localFilePath.isEmpty) {
+      _addConsoleOutput('❌ Local file is empty');
+      notifyListeners();
       return;
     }
 
+    final destinationFileName = p.basename(_localFilePath);
+    final remoteDestDir = _remotePath.endsWith('/')
+        ? _remotePath
+        : '$_remotePath/';
+    final remoteDestPath = '$remoteDestDir$destinationFileName';
+
     _progress.reset();
-    _addConsoleOutput('🚀 Starting file transfer and execution...');
+    _progress.update(5, 'Preparing transfer...', 'Preparation');
+    _addConsoleOutput('🚀 Starting transfer to $_host');
     notifyListeners();
 
     try {
-      // Stage 1: File Transfer (0-80%)
-      _progress.update(20, 'Transferring file...', 'File Transfer');
-      _addConsoleOutput('📤 Uploading $_localFilePath to $_remotePath');
+      // Stage 1: Transfer via scp (leverages user's SSH config/agent)
+      _progress.update(15, 'Connecting (scp)...', 'File Transfer');
+      _addConsoleOutput(
+        '📤 scp "$destinationFileName" → $_host:$remoteDestDir',
+      );
+      notifyListeners();
 
-      // Simulate file transfer
-      for (int i = 20; i <= 80; i += 10) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        _progress.update(i.toDouble(), 'Transferring file...', 'File Transfer');
+      final scp = await Process.start('scp', [
+        _localFilePath,
+        '$_host:$remoteDestPath',
+      ], runInShell: true);
+
+      // Stream outputs
+      scp.stdout.transform(SystemEncoding().decoder).listen((data) {
+        _addConsoleOutput(data.trim());
+        notifyListeners();
+      });
+      scp.stderr.transform(SystemEncoding().decoder).listen((data) {
+        final line = data.trim();
+        if (line.isNotEmpty) {
+          _addConsoleOutput('scp: $line');
+          notifyListeners();
+        }
+      });
+
+      final scpExit = await scp.exitCode;
+      if (scpExit != 0) {
+        _addConsoleOutput('❌ scp failed with exit code $scpExit');
+        _progress.error();
+        notifyListeners();
+        return;
+      }
+
+      _progress.update(70, 'File uploaded', 'File Transfer');
+      _addConsoleOutput('✅ Uploaded to $remoteDestPath');
+      notifyListeners();
+
+      // Stage 2: Execute remote script/template if provided
+      if (_templateFilePath.isNotEmpty) {
+        _progress.update(80, 'Executing remote script...', 'Script Execution');
+        final escapedPath = remoteDestPath.replaceAll('"', '\\"');
+        // If template is an executable script, run it; otherwise try bash
+        final command =
+            'chmod +x "$escapedPath" >/dev/null 2>&1 || true; "$escapedPath" || bash "$escapedPath"';
+        _addConsoleOutput('⚡ ssh $_host -- $command');
+        notifyListeners();
+
+        final ssh = await Process.start('ssh', [
+          _host,
+          command,
+        ], runInShell: true);
+
+        ssh.stdout.transform(SystemEncoding().decoder).listen((data) {
+          final line = data.trim();
+          if (line.isNotEmpty) {
+            _addConsoleOutput(line);
+            notifyListeners();
+          }
+        });
+        ssh.stderr.transform(SystemEncoding().decoder).listen((data) {
+          final line = data.trim();
+          if (line.isNotEmpty) {
+            _addConsoleOutput('ssh: $line');
+            notifyListeners();
+          }
+        });
+
+        final sshExit = await ssh.exitCode;
+        if (sshExit != 0) {
+          _addConsoleOutput(
+            '❌ Remote execution failed with exit code $sshExit',
+          );
+          _progress.error();
+          notifyListeners();
+          return;
+        }
+
+        _progress.update(95, 'Script completed', 'Script Execution');
+        _addConsoleOutput('✅ Script executed successfully');
         notifyListeners();
       }
 
-      _addConsoleOutput('✅ File uploaded successfully');
-
-      // Stage 2: Script Execution (80-95%)
-      _progress.update(85, 'Executing script...', 'Script Execution');
-      _addConsoleOutput('⚡ Executing remote script...');
-
-      await Future.delayed(const Duration(seconds: 2));
-      _progress.update(95, 'Script completed', 'Script Execution');
-      _addConsoleOutput('✅ Script executed successfully (exit code: 0)');
-
-      // Stage 3: Cleanup (95-100%)
-      _progress.update(100, 'Disconnecting...', 'Cleanup');
-      _addConsoleOutput('🔌 Disconnecting from server...');
-
-      await Future.delayed(const Duration(milliseconds: 500));
-      _isConnected = false;
-      _addConsoleOutput('✅ Disconnected successfully');
-
+      // Stage 3: Done
+      _progress.update(100, 'Done', 'Complete');
+      _addConsoleOutput('🎉 Transfer and execution completed');
       _progress.complete();
       notifyListeners();
     } catch (e) {
-      _addConsoleOutput('❌ Error during execution: $e');
+      _addConsoleOutput('❌ Error: $e');
       _progress.error();
       notifyListeners();
     }

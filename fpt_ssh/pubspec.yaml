@@ -37,6 +37,7 @@ dependencies:
   
   # SSH and file operations
   ssh2: ^2.2.3
+  dartssh2: ^2.8.0
   file_picker: ^8.0.0+1
   path_provider: ^2.1.2
   
