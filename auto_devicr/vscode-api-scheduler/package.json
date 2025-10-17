@@ -1,0 +1,126 @@
+{
+  "name": "vscode-api-scheduler",
+  "displayName": "API Scheduler",
+  "description": "Call APIs and schedule daily API calls from VS Code.",
+  "version": "0.0.1",
+  "publisher": "your-publisher",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.89.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:apiScheduler.runNow",
+    "onCommand:apiScheduler.toggleSchedule",
+    "onCommand:apiScheduler.openOutput",
+    "onCommand:apiScheduler.login"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "apiScheduler.runNow",
+        "title": "API Scheduler: Run Now"
+      },
+      {
+        "command": "apiScheduler.login",
+        "title": "API Scheduler: Login"
+      },
+      {
+        "command": "apiScheduler.toggleSchedule",
+        "title": "API Scheduler: Toggle Daily Schedule"
+      },
+      {
+        "command": "apiScheduler.openOutput",
+        "title": "API Scheduler: Open Output"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "API Scheduler",
+      "properties": {
+        "apiScheduler.baseUrl": {
+          "type": "string",
+          "default": "http://device-farm.lge.com",
+          "description": "Base URL for the Device Farm API."
+        },
+        "apiScheduler.apiUrl": {
+          "type": "string",
+          "default": "https://httpbin.org/get",
+          "description": "API URL to call."
+        },
+        "apiScheduler.method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+          "default": "GET",
+          "description": "HTTP method for the API call."
+        },
+        "apiScheduler.headers": {
+          "type": "object",
+          "default": {},
+          "description": "HTTP headers as key-value pairs."
+        },
+        "apiScheduler.body": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Request body for non-GET methods (sent as-is)."
+        },
+        "apiScheduler.username": {
+          "type": ["string", "null"],
+          "default": null,
+          "markdownDescription": "Username for Basic auth (stored in settings). Leave empty to be prompted."
+        },
+        "apiScheduler.password": {
+          "type": ["string", "null"],
+          "default": null,
+          "markdownDescription": "Password for Basic auth (stored in settings). Leave empty to be prompted."
+        },
+        "apiScheduler.deviceId": {
+          "type": ["string", "number", "null"],
+          "default": null,
+          "description": "Device ID used for extend command."
+        },
+        "apiScheduler.extendHour": {
+          "type": "number",
+          "default": 1,
+          "description": "Number of hours to extend in PATCH /api/userdevice/{id}."
+        },
+        "apiScheduler.timeoutMs": {
+          "type": "number",
+          "default": 15000,
+          "description": "Timeout for the API call in milliseconds."
+        },
+        "apiScheduler.cron": {
+          "type": "string",
+          "default": "0 9 * * *",
+          "description": "Cron schedule (min hour day month dayOfWeek). Defaults to 09:00 daily."
+        },
+        "apiScheduler.enableOnStartup": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable the daily schedule automatically on VS Code startup."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.89.0",
+    "typescript": "^5.3.3",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "node-cron": "^3.0.3"
+  }
+}
+
+

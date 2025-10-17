@@ -113,7 +113,30 @@ class SSHProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Stage 1: Transfer via scp (leverages user's SSH config/agent)
+      // Stage 1: Ensure remote directory exists (prevents scp 255)
+      _progress.update(12, 'Preparing remote directory...', 'Preparation');
+      _addConsoleOutput('📁 ssh $_host: mkdir -p "$remoteDestDir"');
+      notifyListeners();
+
+      final sshMkdir = await Process.start('ssh', [
+        '-p',
+        _port.toString(),
+        '-o',
+        'StrictHostKeyChecking=accept-new',
+        _host,
+        'mkdir -p "${remoteDestDir.replaceAll('"', '\\"')}"',
+      ], runInShell: true);
+      final mkdirCode = await sshMkdir.exitCode;
+      if (mkdirCode != 0) {
+        _addConsoleOutput(
+          '❌ Failed to create remote directory (code $mkdirCode)',
+        );
+        _progress.error();
+        notifyListeners();
+        return;
+      }
+
+      // Stage 2: Transfer via scp (leverages user's SSH config/agent)
       _progress.update(15, 'Connecting (scp)...', 'File Transfer');
       _addConsoleOutput(
         '📤 scp "$destinationFileName" → $_host:$remoteDestDir',
@@ -121,6 +144,10 @@ class SSHProvider extends ChangeNotifier {
       notifyListeners();
 
       final scp = await Process.start('scp', [
+        '-P',
+        _port.toString(),
+        '-o',
+        'StrictHostKeyChecking=accept-new',
         _localFilePath,
         '$_host:$remoteDestPath',
       ], runInShell: true);
@@ -157,10 +184,14 @@ class SSHProvider extends ChangeNotifier {
         // If template is an executable script, run it; otherwise try bash
         final command =
             'chmod +x "$escapedPath" >/dev/null 2>&1 || true; "$escapedPath" || bash "$escapedPath"';
-        _addConsoleOutput('⚡ ssh $_host -- $command');
+        _addConsoleOutput('⚡ ssh $_host -- (execute uploaded file)');
         notifyListeners();
 
         final ssh = await Process.start('ssh', [
+          '-p',
+          _port.toString(),
+          '-o',
+          'StrictHostKeyChecking=accept-new',
           _host,
           command,
         ], runInShell: true);

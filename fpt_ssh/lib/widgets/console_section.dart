@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/ssh_provider.dart';
 
@@ -199,7 +200,8 @@ class ConsoleSection extends StatelessWidget {
   }
 
   void _copyToClipboard(BuildContext context, List<String> output) {
-    // TODO: Implement clipboard functionality
+    final text = output.join('\n');
+    Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Console output copied to clipboard')),
     );
