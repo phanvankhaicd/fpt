@@ -1,0 +1,17 @@
+{
+  "version": "4.4.0",
+  "installed_at": "2025-10-17T03:59:04.174Z",
+  "install_type": "full",
+  "agent": null,
+  "ide_setup": null,
+  "ides_setup": [
+    "cursor"
+  ],
+  "files": [
+    {
+      "path": ".bmad-core/install-manifest.yml",
+      "hash": "b093ec9c039dcce0",
+      "modified": false
+    }
+  ]
+}
