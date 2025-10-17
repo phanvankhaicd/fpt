@@ -6,7 +6,6 @@ class SSHProvider extends ChangeNotifier {
   // Connection state
   String _host = '';
   int _port = 22;
-  String _keyPath = '';
   bool _isConnected = false;
   bool _isConnecting = false;
 
@@ -27,7 +26,6 @@ class SSHProvider extends ChangeNotifier {
   // Getters
   String get host => _host;
   int get port => _port;
-  String get keyPath => _keyPath;
   bool get isConnected => _isConnected;
   bool get isConnecting => _isConnecting;
   String get localFilePath => _localFilePath;
@@ -45,11 +43,6 @@ class SSHProvider extends ChangeNotifier {
 
   void setPort(int port) {
     _port = port;
-    notifyListeners();
-  }
-
-  void setKeyPath(String keyPath) {
-    _keyPath = keyPath;
     notifyListeners();
   }
 
@@ -148,7 +141,6 @@ class SSHProvider extends ChangeNotifier {
       final connection = SSHConnection(
         host: _host,
         port: _port,
-        keyPath: _keyPath,
         lastUsed: DateTime.now(),
       );
 
@@ -171,7 +163,6 @@ class SSHProvider extends ChangeNotifier {
   void loadConnection(SSHConnection connection) {
     _host = connection.host;
     _port = connection.port;
-    _keyPath = connection.keyPath;
     _addConsoleOutput('📋 Loaded connection: ${connection.host}');
     notifyListeners();
   }
@@ -204,7 +195,6 @@ class SSHProvider extends ChangeNotifier {
   void reset() {
     _host = '';
     _port = 22;
-    _keyPath = '';
     _isConnected = false;
     _isConnecting = false;
     _localFilePath = '';

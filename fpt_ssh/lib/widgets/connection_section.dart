@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 import '../providers/ssh_provider.dart';
 import '../models/ssh_connection.dart';
+import '../theme/app_theme.dart';
 
 class ConnectionSection extends StatefulWidget {
   @override
@@ -13,21 +12,11 @@ class ConnectionSection extends StatefulWidget {
 class _ConnectionSectionState extends State<ConnectionSection> {
   final TextEditingController _hostController = TextEditingController();
   final TextEditingController _portController = TextEditingController();
-  final TextEditingController _keyPathController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _portController.text = '22';
-    _keyPathController.text = _getDefaultSSHKeyPath();
-  }
-
-  String _getDefaultSSHKeyPath() {
-    final homeDir =
-        Platform.environment['HOME'] ??
-        Platform.environment['USERPROFILE'] ??
-        '';
-    return '$homeDir/.ssh/id_rsa';
   }
 
   @override
@@ -35,186 +24,355 @@ class _ConnectionSectionState extends State<ConnectionSection> {
     return Consumer<SSHProvider>(
       builder: (context, provider, child) {
         return Card(
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.router,
-                      color: Theme.of(context).colorScheme.primary,
+          elevation: 3,
+          shadowColor: AppTheme.cardShadow,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, AppTheme.lightGray.withOpacity(0.3)],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Modern header with gradient
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'SSH Connection',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(
+                            Icons.router,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'SSH Connection',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Spacer(),
+                        // Modern status indicator
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: provider.isConnected
+                                ? AppTheme.connectedColor.withOpacity(0.2)
+                                : AppTheme.disconnectedColor.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: provider.isConnected
+                                  ? AppTheme.connectedColor
+                                  : AppTheme.disconnectedColor,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                provider.isConnected
+                                    ? Icons.wifi
+                                    : Icons.wifi_off,
+                                size: 14,
+                                color: provider.isConnected
+                                    ? AppTheme.connectedColor
+                                    : AppTheme.disconnectedColor,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                provider.isConnected
+                                    ? 'Connected'
+                                    : 'Disconnected',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: provider.isConnected
+                                      ? AppTheme.connectedColor
+                                      : AppTheme.disconnectedColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                  ),
+                  const SizedBox(height: 16),
 
-                // Host input with dropdown
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: TextField(
-                        controller: _hostController,
-                        decoration: const InputDecoration(
-                          labelText: 'Host',
-                          hintText: 'user@server.com',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.computer),
+                  // Modern form layout
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextField(
+                          controller: _hostController,
+                          decoration: InputDecoration(
+                            labelText: 'Host',
+                            hintText: 'user@server.com',
+                            prefixIcon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryBlue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.computer,
+                                size: 18,
+                                color: AppTheme.primaryBlue,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                color: AppTheme.cardBorder,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                color: AppTheme.cardBorder,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                color: AppTheme.primaryBlue,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                          ),
+                          onChanged: (value) => provider.setHost(value),
                         ),
-                        onChanged: (value) => provider.setHost(value),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 100,
+                        child: TextField(
+                          controller: _portController,
+                          decoration: InputDecoration(
+                            labelText: 'Port',
+                            prefixIcon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondaryGreen.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(
+                                Icons.settings_ethernet,
+                                size: 18,
+                                color: AppTheme.secondaryGreen,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                color: AppTheme.cardBorder,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                color: AppTheme.cardBorder,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                color: AppTheme.secondaryGreen,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            final port = int.tryParse(value) ?? 22;
+                            provider.setPort(port);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Modern action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: provider.isConnecting
+                                ? LinearGradient(
+                                    colors: [
+                                      AppTheme.neutralGray,
+                                      AppTheme.neutralGray.withOpacity(0.7),
+                                    ],
+                                  )
+                                : AppTheme.primaryGradient,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryBlue.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: provider.isConnecting
+                                ? null
+                                : () => _testConnection(provider),
+                            icon: provider.isConnecting
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(Icons.wifi_find, size: 18),
+                            label: Text(
+                              provider.isConnecting
+                                  ? 'Testing...'
+                                  : 'Test Connection',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.successGradient,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.secondaryGreen.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: () => _saveConnection(provider),
+                            icon: const Icon(Icons.save, size: 18),
+                            label: const Text(
+                              'Save Connection',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Connection history - only show if not empty
+                  if (provider.connectionHistory.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Divider(height: 1),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Recent Connections',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 1,
-                      child: TextField(
-                        controller: _portController,
-                        decoration: const InputDecoration(
-                          labelText: 'Port',
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          final port = int.tryParse(value) ?? 22;
-                          provider.setPort(port);
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 40,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: provider.connectionHistory.length,
+                        itemBuilder: (context, index) {
+                          final connection = provider.connectionHistory[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ActionChip(
+                              label: Text(
+                                connection.displayName,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              onPressed: () =>
+                                  _loadConnection(provider, connection),
+                              backgroundColor: AppTheme.lightGray,
+                              side: BorderSide(color: AppTheme.cardBorder),
+                            ),
+                          );
                         },
                       ),
                     ),
                   ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Key path input
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _keyPathController,
-                        decoration: const InputDecoration(
-                          labelText: 'SSH Key Path',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.key),
-                        ),
-                        onChanged: (value) => provider.setKeyPath(value),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: _browseForKey,
-                      icon: const Icon(Icons.folder_open),
-                      label: const Text('Browse'),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Action buttons
-                Row(
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: provider.isConnecting
-                          ? null
-                          : () => _testConnection(provider),
-                      icon: provider.isConnecting
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.wifi_find),
-                      label: Text(
-                        provider.isConnecting
-                            ? 'Testing...'
-                            : 'Test Connection',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: () => _saveConnection(provider),
-                      icon: const Icon(Icons.save),
-                      label: const Text('Save'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Connection history
-                if (provider.connectionHistory.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Recent Connections',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: provider.connectionHistory.take(5).map((
-                      connection,
-                    ) {
-                      return GestureDetector(
-                        onTap: () => _loadConnection(provider, connection),
-                        child: Chip(
-                          label: Text(connection.displayName),
-                          onDeleted: () =>
-                              _deleteConnection(provider, connection),
-                          deleteIcon: const Icon(Icons.close, size: 18),
-                        ),
-                      );
-                    }).toList(),
-                  ),
                 ],
-              ],
+              ),
             ),
           ),
         );
       },
     );
-  }
-
-  Future<void> _browseForKey() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pem', 'key', 'rsa', 'ed25519'],
-        allowMultiple: false,
-      );
-
-      if (result != null && result.files.single.path != null) {
-        _keyPathController.text = result.files.single.path!;
-        Provider.of<SSHProvider>(
-          context,
-          listen: false,
-        ).setKeyPath(result.files.single.path!);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error selecting key file: $e')));
-    }
   }
 
   Future<void> _testConnection(SSHProvider provider) async {
@@ -230,9 +388,9 @@ class _ConnectionSectionState extends State<ConnectionSection> {
 
   void _saveConnection(SSHProvider provider) {
     if (_hostController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a host to save')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter a host')));
       return;
     }
 
@@ -245,7 +403,6 @@ class _ConnectionSectionState extends State<ConnectionSection> {
   void _loadConnection(SSHProvider provider, SSHConnection connection) {
     _hostController.text = connection.host;
     _portController.text = connection.port.toString();
-    _keyPathController.text = connection.keyPath;
     provider.loadConnection(connection);
   }
 
@@ -257,7 +414,6 @@ class _ConnectionSectionState extends State<ConnectionSection> {
   void dispose() {
     _hostController.dispose();
     _portController.dispose();
-    _keyPathController.dispose();
     super.dispose();
   }
 }

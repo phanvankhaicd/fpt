@@ -28,37 +28,76 @@ class SSHToolScreen extends StatelessWidget {
       body: Consumer<SSHProvider>(
         builder: (context, provider, child) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // SSH Connection Section
-                ConnectionSection(),
+                // Top row: Connection and Execute sections
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Connection Section - Left side
+                    Expanded(flex: 2, child: ConnectionSection()),
+                    const SizedBox(width: 8),
+                    // Execute Section - Right side
+                    Expanded(flex: 1, child: ExecuteSection()),
+                  ],
+                ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
-                // File Operations Section
-                FileOperationsSection(),
+                // Middle row: File Operations and Progress
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // File Operations Section - Left side
+                    Expanded(flex: 2, child: FileOperationsSection()),
+                    const SizedBox(width: 8),
+                    // Progress Section - Right side
+                    Expanded(flex: 1, child: ProgressSection()),
+                  ],
+                ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
-                // Progress Section
-                ProgressSection(),
-
-                const SizedBox(height: 16),
-
-                // Execute Section
-                ExecuteSection(),
-
-                const SizedBox(height: 16),
-
-                // Console Output Section
+                // Bottom: Console Section - Full width
                 ConsoleSection(),
               ],
             ),
           );
         },
       ),
+      floatingActionButton: Consumer<SSHProvider>(
+        builder: (context, provider, child) {
+          return FloatingActionButton.extended(
+            onPressed: provider.canExecute && !provider.progress.isInProgress
+                ? () => _executeTransfer(provider)
+                : null,
+            icon: provider.progress.isInProgress
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.rocket_launch),
+            label: Text(
+              provider.progress.isInProgress ? 'Executing...' : 'Execute',
+            ),
+            backgroundColor:
+                provider.canExecute && !provider.progress.isInProgress
+                ? Colors.green
+                : Colors.grey,
+            foregroundColor: Colors.white,
+          );
+        },
+      ),
     );
+  }
+
+  Future<void> _executeTransfer(SSHProvider provider) async {
+    await provider.executeTransfer();
   }
 }

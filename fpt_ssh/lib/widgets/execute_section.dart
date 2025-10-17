@@ -10,88 +10,94 @@ class ExecuteSection extends StatelessWidget {
         return Card(
           elevation: 2,
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Compact header
                 Row(
                   children: [
                     Icon(
                       Icons.rocket_launch,
                       color: Theme.of(context).colorScheme.primary,
+                      size: 20,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Execute',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    // Quick status indicator
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: provider.canExecute
+                            ? Colors.green.withOpacity(0.1)
+                            : Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: provider.canExecute
+                              ? Colors.green
+                              : Colors.orange,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            provider.canExecute
+                                ? Icons.check_circle
+                                : Icons.warning,
+                            size: 12,
+                            color: provider.canExecute
+                                ? Colors.green
+                                : Colors.orange,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            provider.canExecute ? 'Ready' : 'Setup Required',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: provider.canExecute
+                                  ? Colors.green
+                                  : Colors.orange,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-
-                // Execute button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton.icon(
-                    onPressed:
-                        provider.canExecute && !provider.progress.isInProgress
-                        ? () => _executeTransfer(provider)
-                        : null,
-                    icon: provider.progress.isInProgress
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : const Icon(Icons.rocket_launch),
-                    label: Text(
-                      provider.progress.isInProgress
-                          ? 'Executing...'
-                          : 'Execute & Disconnect',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          provider.canExecute && !provider.progress.isInProgress
-                          ? Colors.green
-                          : Colors.grey,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-
                 const SizedBox(height: 12),
 
-                // Validation status
-                _buildValidationStatus(context, provider),
+                // Validation status - compact
+                _buildCompactValidationStatus(context, provider),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-                // Quick actions
+                // Quick actions - compact
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _clearAll(provider),
-                        icon: const Icon(Icons.clear_all),
-                        label: const Text('Clear All'),
+                        icon: const Icon(Icons.clear_all, size: 16),
+                        label: const Text(
+                          'Clear Console',
+                          style: TextStyle(fontSize: 12),
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.orange,
                           side: const BorderSide(color: Colors.orange),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
                       ),
                     ),
@@ -99,11 +105,15 @@ class ExecuteSection extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _resetForm(provider),
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Reset'),
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: const Text(
+                          'Reset Form',
+                          style: TextStyle(fontSize: 12),
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.blue,
                           side: const BorderSide(color: Colors.blue),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
                       ),
                     ),
@@ -117,33 +127,36 @@ class ExecuteSection extends StatelessWidget {
     );
   }
 
-  Widget _buildValidationStatus(BuildContext context, SSHProvider provider) {
+  Widget _buildCompactValidationStatus(
+    BuildContext context,
+    SSHProvider provider,
+  ) {
     final issues = <String>[];
 
-    if (provider.host.isEmpty) issues.add('Host is required');
-    if (provider.localFilePath.isEmpty) issues.add('Local file is required');
-    if (provider.templateFilePath.isEmpty)
-      issues.add('Template file is required');
-    if (!provider.isConnected) issues.add('Not connected to server');
+    if (provider.host.isEmpty) issues.add('Host required');
+    if (provider.localFilePath.isEmpty) issues.add('Local file required');
+    if (provider.templateFilePath.isEmpty) issues.add('Template required');
+    if (!provider.isConnected) issues.add('Not connected');
 
     if (issues.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.green.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(color: Colors.green.withOpacity(0.3)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 20),
-            const SizedBox(width: 8),
+            const Icon(Icons.check_circle, color: Colors.green, size: 16),
+            const SizedBox(width: 6),
             Expanded(
               child: Text(
                 'Ready to execute',
                 style: TextStyle(
                   color: Colors.green[700],
                   fontWeight: FontWeight.w500,
+                  fontSize: 12,
                 ),
               ),
             ),
@@ -152,10 +165,10 @@ class ExecuteSection extends StatelessWidget {
       );
     } else {
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.orange.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(color: Colors.orange.withOpacity(0.3)),
         ),
         child: Column(
@@ -163,24 +176,25 @@ class ExecuteSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.warning, color: Colors.orange, size: 20),
-                const SizedBox(width: 8),
+                const Icon(Icons.warning, color: Colors.orange, size: 16),
+                const SizedBox(width: 6),
                 Text(
-                  'Issues to resolve:',
+                  'Issues:',
                   style: TextStyle(
                     color: Colors.orange[700],
                     fontWeight: FontWeight.w500,
+                    fontSize: 12,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             ...issues.map(
               (issue) => Padding(
-                padding: const EdgeInsets.only(left: 28, top: 2),
+                padding: const EdgeInsets.only(left: 22, top: 1),
                 child: Text(
                   '• $issue',
-                  style: TextStyle(color: Colors.orange[600], fontSize: 12),
+                  style: TextStyle(color: Colors.orange[600], fontSize: 10),
                 ),
               ),
             ),
@@ -188,10 +202,6 @@ class ExecuteSection extends StatelessWidget {
         ),
       );
     }
-  }
-
-  Future<void> _executeTransfer(SSHProvider provider) async {
-    await provider.executeTransfer();
   }
 
   void _clearAll(SSHProvider provider) {

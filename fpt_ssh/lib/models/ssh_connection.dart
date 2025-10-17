@@ -1,7 +1,7 @@
 class SSHConnection {
   final String host;
   final int port;
-  final String keyPath;
+  final String? keyPath;
   final DateTime lastUsed;
   final int useCount;
   final String? nickname;
@@ -9,7 +9,7 @@ class SSHConnection {
   SSHConnection({
     required this.host,
     required this.port,
-    required this.keyPath,
+    this.keyPath,
     required this.lastUsed,
     this.useCount = 1,
     this.nickname,
@@ -44,14 +44,11 @@ class SSHConnection {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SSHConnection &&
-        other.host == host &&
-        other.port == port &&
-        other.keyPath == keyPath;
+    return other is SSHConnection && other.host == host && other.port == port;
   }
 
   @override
-  int get hashCode => host.hashCode ^ port.hashCode ^ keyPath.hashCode;
+  int get hashCode => host.hashCode ^ port.hashCode;
 
   @override
   String toString() {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../providers/ssh_provider.dart';
+import '../theme/app_theme.dart';
 
 class FileOperationsSection extends StatelessWidget {
   @override
@@ -9,149 +10,184 @@ class FileOperationsSection extends StatelessWidget {
     return Consumer<SSHProvider>(
       builder: (context, provider, child) {
         return Card(
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.folder,
-                      color: Theme.of(context).colorScheme.primary,
+          elevation: 3,
+          shadowColor: AppTheme.cardShadow,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, AppTheme.lightGray.withOpacity(0.3)],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Modern header with gradient
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.successGradient,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'File Operations',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Local file selection
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Local File',
-                          hintText: 'Select file to upload',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.upload_file),
-                          suffixIcon: provider.localFilePath.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () =>
-                                      provider.setLocalFilePath(''),
-                                )
-                              : null,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(
+                            Icons.folder,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
-                        readOnly: true,
-                        controller: TextEditingController(
-                          text: provider.localFilePath.isEmpty
-                              ? ''
-                              : provider.localFilePath.split('/').last,
+                        const SizedBox(width: 12),
+                        const Text(
+                          'File Operations',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: () => _selectLocalFile(provider, context),
-                      icon: const Icon(Icons.folder_open),
-                      label: const Text('Browse'),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Template file selection
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Template File',
-                          hintText: 'Select shell script template',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.description),
-                          suffixIcon: provider.templateFilePath.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () =>
-                                      provider.setTemplateFilePath(''),
-                                )
-                              : null,
-                        ),
-                        readOnly: true,
-                        controller: TextEditingController(
-                          text: provider.templateFilePath.isEmpty
-                              ? ''
-                              : provider.templateFilePath.split('/').last,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: () => _selectTemplateFile(provider, context),
-                      icon: const Icon(Icons.folder_open),
-                      label: const Text('Browse'),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Remote path
-                TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'Remote Path',
-                    hintText: '/home/user/scripts/',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.storage),
-                  ),
-                  onChanged: (value) => provider.setRemotePath(value),
-                  controller: TextEditingController(text: provider.remotePath),
-                ),
-
-                const SizedBox(height: 12),
-
-                // File info display
-                if (provider.localFilePath.isNotEmpty ||
-                    provider.templateFilePath.isNotEmpty) ...[
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Selected Files',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+                        const Spacer(),
+                        // Compact status indicator
+                        if (provider.localFilePath.isNotEmpty &&
+                            provider.templateFilePath.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white, width: 1),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.check_circle,
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 4),
+                                const Text(
+                                  'Ready',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
 
-                  if (provider.localFilePath.isNotEmpty)
-                    _buildFileInfo(
-                      context,
-                      'Local File',
-                      provider.localFilePath,
-                      Icons.upload_file,
-                      Colors.blue,
-                    ),
+                  // Compact file selection
+                  _buildCompactFileSelector(
+                    context,
+                    provider,
+                    'Local File',
+                    provider.localFilePath,
+                    Icons.upload_file,
+                    AppTheme.primaryBlue,
+                    () => _selectLocalFile(provider, context),
+                    () => provider.setLocalFilePath(''),
+                  ),
 
-                  if (provider.templateFilePath.isNotEmpty)
-                    _buildFileInfo(
-                      context,
-                      'Template File',
-                      provider.templateFilePath,
-                      Icons.description,
-                      Colors.green,
+                  const SizedBox(height: 12),
+
+                  _buildCompactFileSelector(
+                    context,
+                    provider,
+                    'Template File',
+                    provider.templateFilePath,
+                    Icons.description,
+                    AppTheme.secondaryGreen,
+                    () => _selectTemplateFile(provider, context),
+                    () => provider.setTemplateFilePath(''),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Remote path - compact
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Remote Path',
+                      hintText: '/home/user/scripts/',
+                      prefixIcon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentOrange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.storage,
+                          size: 18,
+                          color: AppTheme.accentOrange,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: AppTheme.cardBorder,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: AppTheme.cardBorder,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: AppTheme.accentOrange,
+                          width: 2,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
+                    onChanged: (value) => provider.setRemotePath(value),
+                    controller: TextEditingController(
+                      text: provider.remotePath,
+                    ),
+                  ),
+
+                  // Compact file info display
+                  if (provider.localFilePath.isNotEmpty ||
+                      provider.templateFilePath.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    const Divider(height: 1),
+                    const SizedBox(height: 8),
+                    _buildCompactFileInfo(provider.localFilePath, 'Local'),
+                    if (provider.templateFilePath.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      _buildCompactFileInfo(
+                        provider.templateFilePath,
+                        'Template',
+                      ),
+                    ],
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -159,43 +195,134 @@ class FileOperationsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildFileInfo(
+  Widget _buildCompactFileSelector(
     BuildContext context,
+    SSHProvider provider,
     String label,
-    String path,
+    String filePath,
     IconData icon,
     Color color,
+    VoidCallback onSelect,
+    VoidCallback onClear,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.cardBorder),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 8),
+          // Icon container
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(10),
+                bottomLeft: Radius.circular(10),
+              ),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          // File info
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    filePath.isEmpty
+                        ? 'No file selected'
+                        : filePath.split('/').last,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: filePath.isEmpty
+                          ? AppTheme.textLight
+                          : AppTheme.textPrimary,
+                      fontWeight: filePath.isEmpty
+                          ? FontWeight.normal
+                          : FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Action buttons
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (filePath.isNotEmpty)
+                IconButton(
+                  onPressed: onClear,
+                  icon: const Icon(Icons.clear, size: 16),
+                  tooltip: 'Clear selection',
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                  style: IconButton.styleFrom(
+                    foregroundColor: AppTheme.errorRed,
+                    backgroundColor: AppTheme.errorRed.withOpacity(0.1),
                   ),
                 ),
-                Text(
-                  path,
-                  style: Theme.of(context).textTheme.bodySmall,
-                  overflow: TextOverflow.ellipsis,
+              IconButton(
+                onPressed: onSelect,
+                icon: const Icon(Icons.folder_open, size: 18),
+                tooltip: 'Browse for file',
+                padding: const EdgeInsets.all(4),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                style: IconButton.styleFrom(
+                  foregroundColor: color,
+                  backgroundColor: color.withOpacity(0.1),
                 ),
-              ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactFileInfo(String path, String type) {
+    if (path.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.lightGray,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            type == 'Local' ? Icons.upload_file : Icons.description,
+            size: 14,
+            color: AppTheme.textSecondary,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$type: ${path.split('/').last}',
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppTheme.textSecondary,
+              fontWeight: FontWeight.w500,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -207,23 +334,15 @@ class FileOperationsSection extends StatelessWidget {
     BuildContext context,
   ) async {
     try {
-      print('Starting file picker for local file...');
       final result = await FilePicker.platform.pickFiles(
-        allowMultiple: false,
         type: FileType.any,
+        allowMultiple: false,
       );
 
-      print('File picker result: $result');
-
       if (result != null && result.files.single.path != null) {
-        print('Selected file: ${result.files.single.path}');
         provider.setLocalFilePath(result.files.single.path!);
-      } else {
-        print('No file selected or path is null');
       }
     } catch (e) {
-      print('Error selecting local file: $e');
-      // Show error to user
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error selecting file: $e')));
@@ -235,27 +354,19 @@ class FileOperationsSection extends StatelessWidget {
     BuildContext context,
   ) async {
     try {
-      print('Starting file picker for template file...');
       final result = await FilePicker.platform.pickFiles(
-        allowMultiple: false,
         type: FileType.custom,
-        allowedExtensions: ['sh', 'bash', 'txt'],
+        allowedExtensions: ['sh', 'bash', 'py', 'js', 'ts'],
+        allowMultiple: false,
       );
-
-      print('Template file picker result: $result');
 
       if (result != null && result.files.single.path != null) {
-        print('Selected template file: ${result.files.single.path}');
         provider.setTemplateFilePath(result.files.single.path!);
-      } else {
-        print('No template file selected or path is null');
       }
     } catch (e) {
-      print('Error selecting template file: $e');
-      // Show error to user
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error selecting template file: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error selecting template: $e')));
     }
   }
 }

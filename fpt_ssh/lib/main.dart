@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/ssh_tool_screen.dart';
 import 'providers/ssh_provider.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,10 +17,7 @@ class MyApp extends StatelessWidget {
       create: (context) => SSHProvider(),
       child: MaterialApp(
         title: 'SSH File Transfer Tool',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme,
         home: const SSHToolScreen(),
       ),
     );

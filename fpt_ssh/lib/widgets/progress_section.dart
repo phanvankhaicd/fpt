@@ -13,87 +13,133 @@ class ProgressSection extends StatelessWidget {
         return Card(
           elevation: 2,
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Compact header
                 Row(
                   children: [
                     Icon(
                       Icons.analytics,
                       color: Theme.of(context).colorScheme.primary,
+                      size: 20,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Progress & Status',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    // Progress status indicator
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getProgressColor(
+                          progress.state,
+                        ).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _getProgressColor(progress.state),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _getProgressIcon(progress.state),
+                            size: 12,
+                            color: _getProgressColor(progress.state),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${progress.percentage.toStringAsFixed(0)}%',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: _getProgressColor(progress.state),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                // Status indicator
+                // Status indicator - compact
                 Row(
                   children: [
-                    _buildStatusIndicator(progress.state),
-                    const SizedBox(width: 12),
+                    _buildCompactStatusIndicator(progress.state),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         progress.status,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
+                          fontSize: 13,
                         ),
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-                // Progress bar
+                // Progress bar - compact
                 LinearProgressIndicator(
                   value: progress.percentage / 100,
                   backgroundColor: Colors.grey[300],
                   valueColor: AlwaysStoppedAnimation<Color>(
                     _getProgressColor(progress.state),
                   ),
-                  minHeight: 8,
+                  minHeight: 6,
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
-                // Progress details
+                // Progress details - compact
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '${progress.percentage.toStringAsFixed(1)}%',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 11,
                       ),
                     ),
                     if (progress.currentOperation.isNotEmpty)
-                      Text(
-                        progress.currentOperation,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                      Expanded(
+                        child: Text(
+                          progress.currentOperation,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.grey[600], fontSize: 10),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
                         ),
                       ),
                   ],
                 ),
 
-                // File transfer details
+                // File transfer details - compact
                 if (progress.state == ProgressState.transferring &&
                     progress.totalBytes > 0) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'File Transfer: ${progress.formattedFileSize}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        'Transfer: ${progress.formattedFileSize}',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(fontSize: 10),
                       ),
                       if (progress.speed > 0)
                         Text(
@@ -102,26 +148,28 @@ class ProgressSection extends StatelessWidget {
                               ?.copyWith(
                                 color: Colors.green[700],
                                 fontWeight: FontWeight.bold,
+                                fontSize: 10,
                               ),
                         ),
                     ],
                   ),
 
                   if (progress.timeRemaining != null) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       progress.formattedTimeRemaining,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.blue[700]),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.blue[700],
+                        fontSize: 10,
+                      ),
                     ),
                   ],
                 ],
 
-                // Stage indicators
+                // Stage indicators - compact (vertical layout for narrow space)
                 if (progress.isInProgress) ...[
-                  const SizedBox(height: 16),
-                  _buildStageIndicators(progress.state),
+                  const SizedBox(height: 8),
+                  _buildVerticalStageIndicators(progress.state),
                 ],
               ],
             ),
@@ -131,7 +179,7 @@ class ProgressSection extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusIndicator(ProgressState state) {
+  Widget _buildCompactStatusIndicator(ProgressState state) {
     IconData icon;
     Color color;
 
@@ -167,16 +215,84 @@ class ProgressSection extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(icon, color: color, size: 20),
+      child: Icon(icon, color: color, size: 16),
     );
   }
 
-  Widget _buildStageIndicators(ProgressState currentState) {
+  Widget _buildVerticalStageIndicators(ProgressState currentState) {
+    final stages = [
+      (ProgressState.connecting, 'Connect', Icons.wifi_find),
+      (ProgressState.transferring, 'Transfer', Icons.upload),
+      (ProgressState.executing, 'Execute', Icons.play_arrow),
+      (ProgressState.disconnecting, 'Disconnect', Icons.wifi_off),
+    ];
+
+    return Column(
+      children: stages.map((stage) {
+        final (state, label, icon) = stage;
+        final isActive = state == currentState;
+        final isCompleted = _isStageCompleted(currentState, state);
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isCompleted
+                      ? Colors.green.withOpacity(0.1)
+                      : isActive
+                      ? Colors.blue.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isCompleted
+                        ? Colors.green
+                        : isActive
+                        ? Colors.blue
+                        : Colors.grey,
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  icon,
+                  color: isCompleted
+                      ? Colors.green
+                      : isActive
+                      ? Colors.blue
+                      : Colors.grey,
+                  size: 12,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: isCompleted
+                        ? Colors.green
+                        : isActive
+                        ? Colors.blue
+                        : Colors.grey,
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildCompactStageIndicators(ProgressState currentState) {
     final stages = [
       (ProgressState.connecting, 'Connect', Icons.wifi_find),
       (ProgressState.transferring, 'Transfer', Icons.upload),
@@ -194,21 +310,21 @@ class ProgressSection extends StatelessWidget {
         return Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: isCompleted
                     ? Colors.green.withOpacity(0.1)
                     : isActive
                     ? Colors.blue.withOpacity(0.1)
                     : Colors.grey.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isCompleted
                       ? Colors.green
                       : isActive
                       ? Colors.blue
                       : Colors.grey,
-                  width: 2,
+                  width: 1,
                 ),
               ),
               child: Icon(
@@ -218,14 +334,14 @@ class ProgressSection extends StatelessWidget {
                     : isActive
                     ? Colors.blue
                     : Colors.grey,
-                size: 16,
+                size: 14,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 9,
                 color: isCompleted
                     ? Colors.green
                     : isActive
@@ -252,6 +368,25 @@ class ProgressSection extends StatelessWidget {
     final stageIndex = stageOrder.indexOf(stage);
 
     return currentIndex > stageIndex;
+  }
+
+  IconData _getProgressIcon(ProgressState state) {
+    switch (state) {
+      case ProgressState.idle:
+        return Icons.radio_button_unchecked;
+      case ProgressState.connecting:
+        return Icons.wifi_find;
+      case ProgressState.transferring:
+        return Icons.upload;
+      case ProgressState.executing:
+        return Icons.play_arrow;
+      case ProgressState.disconnecting:
+        return Icons.wifi_off;
+      case ProgressState.completed:
+        return Icons.check_circle;
+      case ProgressState.error:
+        return Icons.error;
+    }
   }
 
   Color _getProgressColor(ProgressState state) {
